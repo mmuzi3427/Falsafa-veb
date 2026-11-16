@@ -111,6 +111,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // Butun body'ni o'zgarishlarga qarshi kuzatuvga qo'yamiz
     observer.observe(document.body, {
         childList: true,
-        subtree: true
+        subtree: true,
+        characterData: true 
     });
 });
