@@ -266,7 +266,11 @@ function renderRes(){
 }
 const _r=render;render=function(p){_r(p);renderRes()};
 const V=['mavzu','doska','natijalar'];
-const PLAN=['Inson borlig’ining o’ziga xos xususiyatlari. Sharq va G’arb falsafasida inson muammosi.','Falsafiy antropologiyaning paydo bo’lishi va rivojlanishi. Inson borlig’ida faoliyatning tuzilishi va atributlari.','Qadriyat tushunchasining ma’nosi va uning umumiy tavsifi. Qadriyat nazariyasining shakllanish tarixi.','Oilaning qadriyatga doir jihatlari. Mahalla – o’zbek milliy qadriyati sifatida.','Qadriyatlarning ijtimoiy-ma’naviy ahamiyati va yoshlar tarbiyasidagi o’rni.','Sog’liqning qadriyat sifatidagi ahamiyati. Sog’lom turmush tarzining qadriyatli jihatlari.'];
+
+const PLAN = [
+    'Klaster metodi'
+];
+
 let PD=[];try{PD=JSON.parse(localStorage.getItem('doskaReja')||'[]')}catch(e){}
 function rejaR(){const now=PLAN.findIndex((_,i)=>!PD.includes(i));
   $('#pl').innerHTML=PLAN.map((t,i)=>`<div class="pi ${PD.includes(i)?'done':i===now?'now':''}" data-i="${i}" style="animation-delay:${i*.08}s"><span class="n">${PD.includes(i)?'✓':i+1}</span><p>${t}</p></div>`).join('');
