@@ -272,7 +272,7 @@ document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{show(b.dataset.
 function show(h){if(!V.includes(h))h='mavzu';V.forEach(v=>{$('#v-'+v).classList.toggle('on',v===h);document.querySelector('nav a[data-v='+v+']').classList.toggle('on',v===h)});window.scrollTo(0,0)}
 document.querySelector('nav').onclick=e=>{const a=e.target.closest('a');if(!a)return;e.preventDefault();show(a.dataset.v);try{location.hash=a.dataset.v}catch(x){}};
 window.onhashchange=()=>show(location.hash.slice(1));
-rejaR();render();setT();show(location.hash.slice(1));
+rejaR();render();setT();renderQ();show(location.hash.slice(1));
 </script>
 </body>
 </html>
