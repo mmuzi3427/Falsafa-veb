@@ -14,10 +14,7 @@ const emojiMap = {
     "✓":"10",
 };
 
-// Emojilarni qidirib, Lottie animatsiyasini ulovchi asosiy funksiya
 function processEmojis(rootElement = document.body) {
-    
-    // 1. Matn ichidagi belgilarni .tg-emoji ga o'tkazuvchi funksiya
     function replaceEmojis(element) {
         if (element.nodeType === Node.TEXT_NODE) {
             let text = element.nodeValue;
@@ -61,7 +58,6 @@ function processEmojis(rootElement = document.body) {
 
     replaceEmojis(rootElement);
 
-    // 2. Hali animatsiya ulanmagan .tg-emoji elementlariga Lottie'ni ulash
     const targetElements = rootElement.nodeType === Node.ELEMENT_NODE && rootElement.classList?.contains('tg-emoji') 
         ? [rootElement] 
         : rootElement.querySelectorAll ? rootElement.querySelectorAll('.tg-emoji:not([data-animated])') : [];
@@ -70,7 +66,7 @@ function processEmojis(rootElement = document.body) {
         const emojiName = el.getAttribute('data-name');
         if (!emojiName) return;
         
-        el.setAttribute('data-animated', 'true'); // Takroriy ishlov berishning oldini oladi
+        el.setAttribute('data-animated', 'true');
         el.innerHTML = '';
         const container = document.createElement('span');
         container.className = "lottie-emoji";
@@ -91,24 +87,30 @@ function processEmojis(rootElement = document.body) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-    // 1. Sahifa yuklangandagi mavjud matnlarni ishlaymiz
     processEmojis(document.body);
 
-    // 2. Dinamik qo'shiladigan elementlarni avtomatik ushlash uchun kuzatuvchi (Observer)
+    // Yangilangan kuzatuvchi (Observer)
     const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
-            mutation.addedNodes.forEach((node) => {
-                if (node.nodeType === Node.ELEMENT_NODE) {
-                    // O'zimiz yaratgan lottie elementlarini qayta tekshirib yubormaslik uchun shart
-                    if (!node.classList?.contains('lottie-emoji') && !node.classList?.contains('tg-emoji')) {
-                        processEmojis(node);
-                    }
+            let targetElement = mutation.target;
+            
+            // Agar o'zgarish matn tugunida yuzaga kelgan bo'lsa, uning ota elementini olamiz
+            if (targetElement.nodeType === Node.TEXT_NODE) {
+                targetElement = targetElement.parentElement;
+            }
+
+            if (targetElement && targetElement.nodeType === Node.ELEMENT_NODE) {
+                // O'zimiz yaratgan Lottie elementlariga tegib ketmasligi uchun tekshiruv
+                if (!targetElement.classList?.contains('lottie-emoji') && 
+                    !targetElement.classList?.contains('tg-emoji') &&
+                    !targetElement.closest('.lottie-emoji')) {
+                    processEmojis(targetElement);
                 }
-            });
+            }
         });
     });
 
-    // Butun body'ni o'zgarishlarga qarshi kuzatuvga qo'yamiz
+    // characterData: true orqali tugma ichidagi matn o'zgarishlari ham to'g'ri ushlanadi
     observer.observe(document.body, {
         childList: true,
         subtree: true,
