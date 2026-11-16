@@ -7,6 +7,9 @@ const loop_1 = true;
             ":clr":"4",
             ":fall":"5",
             ":start": "6",
+            "🥇":"7",
+            "🥈":"8",
+            "🥉":"9", 
         };
 
         document.addEventListener("DOMContentLoaded", function() {
