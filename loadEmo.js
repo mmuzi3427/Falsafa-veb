@@ -9,7 +9,8 @@ const emojiMap = {
     "🥇":"7",
     "🏆":"7",
     "🥈":"8",
-    "🥉":"9", 
+    "🥉":"9",
+    "✓":"10",
 };
 
 // Emojilarni qidirib, Lottie animatsiyasini ulovchi asosiy funksiya
