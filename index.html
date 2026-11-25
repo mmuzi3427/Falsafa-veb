@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Interaktiv doska — dars boshqaruvi</title>
+<style>
+:root{--bg:#0a1128;--bg2:#101b3d;--card:rgba(255,255,255,.06);--line:rgba(255,255,255,.1);--tx:#e8edff;--mut:#8b97c4;--ac:#4f8cff;--ac2:#8b5cf6;--ok:#22c55e;--bad:#ef4444;--gold:#fbbf24;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--tx);background:radial-gradient(900px 500px at 10% -10%,#1e3a8a55,transparent),radial-gradient(800px 500px at 100% 0,#5b21b633,transparent),var(--bg)}
+header{display:flex;justify-content:space-between;align-items:center;padding:18px 24px;gap:12px;flex-wrap:wrap}
+h1{margin:0;font-size:1.3rem;letter-spacing:.3px}
+h1 span{background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
+main{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:20px;padding:0 24px 24px;max-width:1500px;margin:auto}
+@media(max-width:900px){main{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;backdrop-filter:blur(12px)}
+.panel h2{margin:0 0 14px;font-size:.8rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--mut)}
+button{font:inherit;color:var(--tx);background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:12px;padding:9px 14px;cursor:pointer;transition:.15s}
+button:hover{background:rgba(255,255,255,.15);transform:translateY(-1px)}
+button:active{transform:scale(.96)}
+.pri{background:linear-gradient(135deg,var(--ac),var(--ac2));border:0;font-weight:600}
+.tabs{display:flex;background:rgba(0,0,0,.25);border-radius:12px;padding:4px;margin-bottom:16px}
+.tabs button{flex:1;border:0;background:none}
+.tabs button.on{background:var(--ac)}
+#clock{font-size:clamp(3.2rem,9vw,5.4rem);font-weight:800;text-align:center;font-variant-numeric:tabular-nums;margin:6px 0 14px;transition:color .3s}
+#clock.warn{color:var(--gold)}#clock.end{color:var(--bad);animation:bl .6s infinite}
+@keyframes bl{50%{opacity:.35}}
+.bar{height:6px;border-radius:9px;background:rgba(255,255,255,.1);overflow:hidden;margin-bottom:16px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ac),var(--ac2));transition:width .3s linear}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.row>*{flex:1}
+input,select{font:inherit;color:var(--tx);background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:10px;padding:9px 10px;width:100%;min-width:0}
+.ti{display:flex;align-items:center;gap:6px;margin-bottom:12px}
+.ti input{text-align:center;font-size:1.1rem}
+.presets button{padding:7px 4px;font-size:.85rem}
+.toolbar{display:flex;gap:8px;margin-bottom:16px}
+.toolbar input{flex:1}
+.toolbar button{flex:none}
+#groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.g{position:relative;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;text-align:center;transition:.3s}
+.g.lead{border-color:var(--gold);box-shadow:0 0 28px #fbbf2430}
+.g .rk{position:absolute;top:12px;left:14px;font-size:.8rem;color:var(--mut);font-weight:700}
+.g .x{position:absolute;top:8px;right:8px;padding:2px 8px;background:none;border:0;color:var(--mut)}
+.g .nm{background:none;border:0;text-align:center;font-weight:700;font-size:1.1rem;margin-top:10px}
+.g .sc{font-size:3.6rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2}
+.g .sc.pop{animation:pop .3s}
+@keyframes pop{50%{transform:scale(1.25)}}
+.g .tm{font-size:.8rem;color:var(--mut);min-height:1.2em;margin-bottom:10px}
+.g .bt{display:flex;gap:8px}
+.g .bt button{flex:1;font-size:1.3rem;font-weight:700;padding:8px}
+.plus{background:#22c55e30;border-color:#22c55e60!important}
+.minus{background:#ef444430;border-color:#ef444460!important}
+.empty{grid-column:1/-1;text-align:center;color:var(--mut);padding:50px 0}
+header{position:sticky;top:0;z-index:20;backdrop-filter:blur(14px);background:#0a1128d9;border-bottom:1px solid var(--line)}
+nav{display:flex;gap:4px;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:14px;padding:4px}
+nav a{padding:8px 18px;border-radius:10px;color:var(--mut);text-decoration:none;font-weight:600;font-size:.92rem;cursor:pointer;transition:.2s}
+nav a:hover{color:var(--tx)}
+nav a.on{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff}
+.view{display:none}.view.on{display:grid}.page{max-width:1500px;margin:auto;padding:0 24px 24px}.page.on{display:block}
+.hero{max-width:1100px;margin:0 auto;padding:30px 0 10px;text-align:center;animation:up .7s both}
+.hero .tag{display:inline-block;padding:6px 16px;border-radius:99px;background:rgba(79,140,255,.15);border:1px solid rgba(79,140,255,.4);color:#9db8ff;font-weight:700;letter-spacing:2px;font-size:.78rem}
+.hero h2{font-size:clamp(2rem,5.2vw,3.6rem);line-height:1.12;margin:18px 0 8px;font-weight:800}
+.hero h2 span,.hero h3 span{background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero h3{font-size:clamp(1.2rem,3vw,1.9rem);margin:0 0 24px;font-weight:600;color:var(--mut)}
+.hero .cta{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
+.hero .cta button{padding:12px 22px;font-size:1rem}
+.plan{max-width:1100px;margin:26px auto 0}
+.plh{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;color:var(--mut);font-size:.85rem;text-transform:uppercase;letter-spacing:1.5px}
+.pbar{height:6px;border-radius:9px;background:rgba(255,255,255,.1);overflow:hidden;margin-bottom:16px}
+.pbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ac),var(--ac2));transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.pl{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.pi{display:flex;gap:14px;align-items:flex-start;text-align:left;padding:18px;border-radius:18px;background:var(--card);border:1px solid var(--line);cursor:pointer;transition:.25s;animation:up .6s both}
+.pi:hover{transform:translateY(-3px);border-color:rgba(79,140,255,.5)}
+.pi .n{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;font-weight:800;background:linear-gradient(135deg,var(--ac),var(--ac2))}
+.pi p{margin:0;line-height:1.5}
+.pi.now{border-color:var(--gold);box-shadow:0 0 24px #fbbf2426}
+.pi.now::after{content:"Hozirgi bosqich";position:absolute}
+.pi.done{opacity:.55}.pi.done .n{background:var(--ok)}.pi.done p{text-decoration:line-through}
+.pi{position:relative}
+.pi.now::after{top:8px;right:12px;font-size:.7rem;color:var(--gold);font-weight:700}
+@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.rr{display:grid;grid-template-columns:48px 1fr auto;gap:14px;align-items:center;padding:14px 4px;border-bottom:1px solid var(--line)}
+.rr .md{font-size:1.6rem;text-align:center;font-weight:700}
+.rr .big{font-size:2rem;font-weight:800;font-variant-numeric:tabular-nums}
+.bar:has(#pg){display:none}
+.ringw{position:relative;width:min(100%,280px);aspect-ratio:1;margin:4px auto 16px;filter:drop-shadow(0 0 18px #4f8cff30)}
+.ringw svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.rb{fill:none;stroke:rgba(255,255,255,.08);stroke-width:8}
+.rf{fill:none;stroke:url(#gr);stroke-width:8;stroke-linecap:round;stroke-dasharray:565.49;stroke-dashoffset:0;transition:stroke-dashoffset .1s linear,stroke .4s}
+.ringw.warn .rf{stroke:var(--gold)}.ringw.end .rf{stroke:var(--bad)}
+.ringw.run{animation:glow 2s ease-in-out infinite}
+@keyframes glow{50%{filter:drop-shadow(0 0 30px #8b5cf666)}}
+#clock{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;margin:0;font-size:3.4rem;line-height:1}
+.d{position:relative;display:inline-block;width:.64em;height:1.15em;overflow:hidden}
+.d i{font-style:normal;position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.d i.in{animation:dIn .4s cubic-bezier(.2,.8,.2,1)}
+.d i.out{animation:dOut .4s ease forwards}
+@keyframes dIn{from{transform:translateY(-110%);opacity:0}to{transform:none;opacity:1}}
+@keyframes dOut{to{transform:translateY(110%);opacity:0}}
+.co{width:.3em;text-align:center;padding-bottom:.08em}
+.ringw.run .co{animation:bl 1s steps(2,end) infinite}
+
+.pool{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 18px}
+.mc{display:inline-flex;align-items:center;gap:6px;padding:9px 15px;border-radius:12px;font:inherit;font-weight:600;color:var(--tx);background:rgba(255,255,255,.07);border:1px solid var(--line);animation:chipIn .5s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*40ms)}
+button.mc{cursor:pointer}button.mc:hover{border-color:rgba(251,191,36,.6);transform:translateY(-2px)}
+.mc.ld{background:linear-gradient(135deg,#fbbf2433,#f59e0b22);border-color:var(--gold);color:#ffe49a;box-shadow:0 0 18px #fbbf2430}
+.mc.no{animation:wob .3s 2}
+.pool.shuf .mc{animation:wob .32s ease-in-out infinite;animation-delay:calc(var(--i)*-37ms)}
+@keyframes wob{0%,100%{transform:translate(0,0) rotate(0)}25%{transform:translate(4px,-5px) rotate(3deg)}75%{transform:translate(-4px,4px) rotate(-3deg)}}
+@keyframes chipIn{from{opacity:0;transform:translateY(14px) scale(.85)}to{opacity:1;transform:none}}
+.mc.land{animation:land .65s cubic-bezier(.2,.8,.2,1)}
+@keyframes land{0%{transform:scale(.6) translateY(-22px);filter:blur(5px)}55%{transform:scale(1.08);box-shadow:0 0 26px #4f8cffaa}100%{transform:none;filter:none}}
+.tip{color:var(--mut);font-size:.88rem}
+.cta2{display:flex;gap:10px;flex-wrap:wrap}.cta2 button{padding:12px 22px;font-size:1rem}
+.cta2 button:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.tg{background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:18px;padding:16px;min-height:120px}
+.tg h3{margin:0 0 12px;display:flex;justify-content:space-between;align-items:center;font-size:1.05rem}
+.tg h3 small{color:var(--mut);font-weight:500}
+.tg .tl{display:flex;flex-direction:column;gap:8px}
+.tg .ph{height:40px;border-radius:12px;border:1px dashed var(--line)}
+.rg{border-bottom:1px solid var(--line)}.rg .rr{border-bottom:0;cursor:pointer;transition:.2s;border-radius:14px}
+.rg .rr:hover{background:rgba(255,255,255,.04)}
+.cv{display:inline-block;margin-left:8px;color:var(--mut);transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+.rg.open .cv{transform:rotate(180deg);color:var(--ac)}
+.mw{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s cubic-bezier(.2,.8,.2,1)}
+.rg.open .mw{grid-template-rows:1fr}
+.mi{overflow:hidden;display:flex;flex-wrap:wrap;gap:10px;padding:0 6px;transition:padding .5s}
+.rg.open .mi{padding:4px 6px 18px}
+.mi .mc{opacity:0}
+.rg.open .mi .mc{animation:chipIn .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i)*80ms + 150ms)}
+.mi .em{color:var(--mut);font-size:.9rem;padding:6px 0}
+</style>
+</head>
+<body>
+<header>
+
+  <h1><span>Inson Falsafasi</span></h1>
+  <nav><a data-v="mavzu" href="#mavzu" class="on">:kitob Mavzu</a><a data-v="doska" href="#doska">:topshiriq Doska</a><a data-v="jamoalar" href="#jamoalar">👥 Jamoalar</a><a data-v="natijalar" href="#natijalar">:natija Natijalar</a></nav>
+  <div class="row" style="margin:0;flex:none">
+    <button id="fs">:fall To'liq ekran</button>
+    <button id="reset">:clr Ballarni tozalash</button>
+  </div>
+</header>
+<section id="v-mavzu" class="view page on">
+  <div class="hero">
+    <span class="tag">:kitob 9-MAVZU</span>
+    <h2><span>Inson falsafasi</span><br>(Falsafiy antropologiya)</h2>
+    <h3>Qadriyatlar falsafasi <span>(aksiologiya)</span></h3>
+    <div class="cta"><button class="pri" data-go="doska">:start Darsni boshlash</button></div>
+  </div>
+  <div class="plan">
+    <div class="plh"><span>Dars rejasi</span><span id="pcnt">0 / 6</span></div>
+    <div class="pbar"><i id="pfill"></i></div>
+    <div class="pl" id="pl"></div>
+    <div style="text-align:center;color:var(--mut);font-size:.8rem;margin-top:12px">Mavzu tugagach, reja bandini bosib «bajarildi» deb belgilang.</div>
+  </div>
+</section>
+<main id="v-doska" class="view">
+  <section class="panel">
+    <h2>Vaqt</h2>
+    <div class="tabs"><button id="mT" class="on">Taymer</button><button id="mS">Sekundomer</button></div>
+    <div class="ringw" id="rw"><svg viewBox="0 0 200 200"><defs><linearGradient id="gr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f8cff"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><circle class="rb" cx="100" cy="100" r="90"/><circle class="rf" id="rg" cx="100" cy="100" r="90"/></svg><div id="clock"></div></div>
+    <div class="bar"><i id="pg"></i></div>
+    <div id="setup">
+      <div class="ti"><input id="mm" type="number" min="0" max="180" value="5"><b>:</b><input id="ss" type="number" min="0" max="59" value="0"></div>
+      <div class="row presets"><button data-m="1">1 daq</button><button data-m="3">3 daq</button><button data-m="5">5 daq</button><button data-m="10">10 daq</button></div>
+    </div>
+    <div class="row"><button id="go" class="pri">▶ Boshlash</button><button id="rs">■ Qayta</button></div>
+    <h2 style="margin-top:18px">Vaqtni guruhga yozish</h2>
+    <div class="row"><select id="sel"></select><button id="save">Saqlash</button></div>
+    <div style="font-size:.8rem;color:var(--mut)">Taymerda sarflangan vaqt, sekundomerda o’tgan vaqt yoziladi.</div>
+  </section>
+  <section>
+    <div class="toolbar">
+      <input id="nn" placeholder="Yangi guruh nomi…" maxlength="24">
+      <button id="add" class="pri">+ Qo’shish</button>
+      <select id="step" style="width:90px"><option>1</option><option>2</option><option>5</option><option>10</option></select>
+    </div>
+    <div id="groups"></div>
+  </section>
+</main>
+<section id="v-jamoalar" class="view page">
+  <div class="panel">
+    <div class="plh"><span>1 · A’zolar ro’yxati</span><span id="tcnt"></span></div>
+    <div class="tip">Sardor bo’ladiganlarni bosib tanlang 👑 (guruhlar soniga teng). Qolganlari random taqsimlanadi.</div>
+    <div id="tpool" class="pool"></div>
+    <div class="cta2"><button id="trnd" class="pri">🎲 Random taqsimlash</button><button id="tclr">Tozalash</button></div>
+  </div>
+  <div class="panel" style="margin-top:20px"><div class="plh"><span>2 · Guruhlar tarkibi</span></div><div id="tres" class="tgrid"></div></div>
+</section>
+<section id="v-natijalar" class="view page">
+  <div class="panel"><h2>Guruhlar reytingi</h2><div id="rl"></div></div>
+</section>
+<script src="emoji.js"></script>
+<script src="loadEmo.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+/* ===== A'ZOLAR RO'YXATI: shu yerga guruh a'zolarini kiriting ===== */
+const MEMBERS=['Azizbek Karimov','Madina Yusupova','Sardor Rahimov','Dilnoza Tursunova','Jasur Aliyev','Malika Nazarova','Otabek Qodirov','Nigora Ismoilova','Bekzod Hamidov','Shahnoza Umarova','Dilshod Saidov','Zilola Rustamova','Javohir Abdullayev','Sevara Mirzayeva','Aziza Sobirova'];
+let G=[],mode='T',total=300,left=300,el=0,run=false,tick=null,t0=0,base=0;
+try{G=JSON.parse(localStorage.getItem('doska')||'[]')}catch(e){}
+if(!G.length)G=['1-guruh','2-guruh','3-guruh'].map((n,i)=>({id:i+1,name:n,score:0,time:''}));
+const save=()=>{try{localStorage.setItem('doska',JSON.stringify(G))}catch(e){}};
+const fmt=s=>{s=Math.max(0,Math.ceil(s-1e-9));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+function render(pop){
+  const max=Math.max(...G.map(g=>g.score));
+  const rank=[...G].sort((a,b)=>b.score-a.score).map(g=>g.id);
+  $('#groups').innerHTML=G.length?G.map(g=>`<div class="g ${g.score>0&&g.score===max?'lead':''}">
+    <span class="rk">#${rank.indexOf(g.id)+1}${g.score>0&&g.score===max?' 🏆':''}</span><button class="x" data-d="${g.id}">✕</button>
+    <input class="nm" value="${esc(g.name)}" data-n="${g.id}">
+    <div class="sc ${pop===g.id?'pop':''}">${g.score}</div>
+    <div class="tm">${g.time?'⏱ '+g.time:''}</div>
+    <div class="bt"><button class="minus" data-s="${g.id}" data-v="-1">−</button><button class="plus" data-s="${g.id}" data-v="1">+</button></div></div>`).join(''):'<div class="empty">Guruh qo’shing</div>';
+  const v=$('#sel').value;
+  $('#sel').innerHTML=G.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
+  if(v)$('#sel').value=v;
+  save();
+}
+$('#groups').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.s){const g=G.find(x=>x.id==b.dataset.s);g.score+=b.dataset.v*$('#step').value;render(g.id)}
+  if(b.dataset.d&&confirm('Guruh o’chirilsinmi?')){G=G.filter(x=>x.id!=b.dataset.d);render()}
+};
+$('#groups').onchange = e => {
+  if (!e.target.dataset.n) return;
+  const group = G.find(x => x.id == e.target.dataset.n);
+  if (!group) return;
+  const newName = e.target.value.trim() || 'Guruh';
+  if (G.some(x => x.id !== group.id && x.name.toLocaleLowerCase() === newName.toLocaleLowerCase())) {
+    alert('Bu nomdagi guruh mavjud.');
+    e.target.value = group.name;
+    return;
+  }
+  group.name = newName;
+  render();
+};
+const addG=()=>{
+  const name = $('#nn').value.trim() || `${G.length + 1}-guruh`;
+  if (G.some(g => g.name.toLocaleLowerCase() === name.toLocaleLowerCase())) {
+    alert('Bu nomdagi guruh mavjud. Boshqa nom kiriting.');
+    return;
+  }
+  G.push({id:Date.now() + Math.floor(Math.random() * 1000), name, score:0, time:''});
+  $('#nn').value = '';
+  render();
+};
+$('#add').onclick=addG;$('#nn').onkeydown=e=>e.key==='Enter'&&addG();
+$('#reset').onclick=()=>{if(confirm('Barcha ballar nolga tushirilsinmi?')){G.forEach(g=>{g.score=0;g.time=''});render()}};
+$('#fs').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{});
+
+function beep(){try{const a=new(window.AudioContext||window.webkitAudioContext)();[0,.25,.5].forEach(d=>{const o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=880;g.gain.value=.2;o.start(a.currentTime+d);o.stop(a.currentTime+d+.15)})}catch(e){}}
+function setClock(s){
+  const c=$('#clock');if(c.dataset.s===s)return false;c.dataset.s=s;
+  if(c.children.length!==s.length){c.innerHTML=[...s].map(ch=>ch===':'?'<span class="co">:</span>':'<span class="d"><i>'+ch+'</i></span>').join('');return true}
+  [...s].forEach((ch,k)=>{const d=c.children[k];if(!d.classList.contains('d'))return;const o=d.lastChild;if(o.textContent===ch)return;
+    [...d.children].forEach(x=>{x.className='out';setTimeout(()=>x.remove(),400)});
+    const n=document.createElement('i');n.textContent=ch;n.className='in';d.appendChild(n)});
+  return true}
+function draw(){
+  const c=$('#clock'),w=$('#rw');let cls='',frac;
+  c.classList.remove('warn','end');
+  if(mode==='T'){frac=total?left/total:0;
+    if(left<=0&&total)cls='end';else if(left<=10&&run)cls='warn'}
+  else frac=(el%60)/60;
+  if(cls)c.classList.add(cls);
+  w.className='ringw '+cls+(run?' run':'');
+  $('#rg').style.strokeDashoffset=565.49*(mode==='T'?1-frac:1-frac);
+  const ch=setClock(fmt(mode==='T'?left:Math.floor(el)));
+  if(ch&&cls==='warn')c.animate([{transform:'scale(1.12)'},{transform:'scale(1)'}],{duration:350,easing:'ease-out'});
+  $('#pg').style.width=mode==='T'&&total?(1-left/total)*100+'%':'0';
+}
+function loop(){
+  const d=(Date.now()-t0)/1000;
+  if(mode==='T'){left=base-d;if(left<=0){left=0;stop();beep()}}else el=base+d;
+  draw();
+}
+function start(){if(run)return;if(mode==='T'){if(left<=0)setT();base=left}else base=el;t0=Date.now();run=true;tick=setInterval(loop,50);$('#go').textContent='⏸ Pauza'}
+function stop(){run=false;clearInterval(tick);draw();$('#go').textContent='▶ Davom'}
+function setT(){
+  const minutes = Math.max(0, Math.min(180, Number($('#mm').value) || 0));
+  const seconds = Math.max(0, Math.min(59, Number($('#ss').value) || 0));
+  $('#mm').value = minutes;
+  $('#ss').value = seconds;
+  total = left = minutes * 60 + seconds;
+  draw();
+}
+$('#go').onclick=()=>run?stop():start();
+$('#rs').onclick=()=>{stop();el=0;setT();$('#go').textContent='▶ Boshlash'};
+document.querySelectorAll('.presets button').forEach(b=>b.onclick=()=>{stop();$('#mm').value=b.dataset.m;$('#ss').value=0;setT();$('#go').textContent='▶ Boshlash'});
+['#mm','#ss'].forEach(s=>$(s).oninput=()=>{if(!run&&mode==='T')setT()});
+function setMode(m){stop();mode=m;el=0;$('#mT').classList.toggle('on',m==='T');$('#mS').classList.toggle('on',m==='S');$('#setup').style.display=m==='T'?'':'none';$('#go').textContent='▶ Boshlash';m==='T'?setT():draw()}
+$('#mT').onclick=()=>setMode('T');$('#mS').onclick=()=>setMode('S');
+$('#save').onclick=()=>{const g=G.find(x=>x.id==$('#sel').value);if(!g)return;
+  const s=mode==='T'?total-left:el;g.time=fmt(Math.round(s));render()};
+document.onkeydown=e=>{if(e.code==='Space'&&$('#v-doska').classList.contains('on')&&!/INPUT|SELECT|BUTTON/.test(e.target.tagName)){e.preventDefault();$('#go').click()}};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const OPEN=new Set();
+function renderRes(){
+  const s=[...G].sort((a,b)=>b.score-a.score),m=Math.max(1,...s.map(g=>g.score));
+  $('#rl').innerHTML=s.map((g,i)=>{const mm=g.members||[];return `<div class="rg ${OPEN.has(g.id)?'open':''}" data-g="${g.id}"><div class="rr"><span class="md">${['🥇','🥈','🥉'][i]||i+1}</span><div><div style="display:flex;justify-content:space-between"><b>${esc(g.name)} <span style="color:var(--mut);font-weight:500;font-size:.85rem">· 👥 ${mm.length}</span><span class="cv">▾</span></b><span style="color:var(--mut)">${g.time?'⏱ '+g.time:''}</span></div><div class="bar" style="margin:8px 0 0"><i style="width:${Math.max(0,g.score)/m*100}%"></i></div></div><span class="big">${g.score}</span></div><div class="mw"><div class="mi">${mm.length?mm.map((n,j)=>`<span class="mc ${n===g.leader?'ld':''}" style="--i:${j}">${n===g.leader?'👑 ':''}${esc(n)}</span>`).join(''):'<span class="em">A’zolar hali taqsimlanmagan. 👥 Jamoalar bo’limida «Random» tugmasini bosing.</span>'}</div></div></div>`}).join('')||'<div class="empty">Guruh yo’q</div>';
+}
+$('#rl').onclick=e=>{const r=e.target.closest('.rg');if(!r||!e.target.closest('.rr'))return;const id=r.dataset.g;OPEN.has(id)?OPEN.delete(id):OPEN.add(id);r.classList.toggle('open')};
+const _r=render;render=function(p){_r(p);renderRes();teamR()};
+const V=['mavzu','doska','jamoalar','natijalar'];
+
+const PLAN = [
+    'Klaster metodi',
+    'Keys study',
+    'Baliq skileti',
+    'Aqliy hujum',
+    'Krasvord',
+    'Blits soʻrov <br>Tezkor savol javob',
+    'Kichik guruhlarda ishlash',
+    'Zigzag usuli',
+    'Debat<br>Baxs',
+    'Roʻlli oʻyin',
+    'Aqlli xarita',
+    'Bilaman Bilishni xohlamayman Bildim<br>BBB',
+    'Ven diogrammasi'
+];
+
+let PD=[];try{PD=JSON.parse(localStorage.getItem('doskaReja')||'[]')}catch(e){}
+function rejaR(){const now=PLAN.findIndex((_,i)=>!PD.includes(i));
+  $('#pl').innerHTML=PLAN.map((t,i)=>`<div class="pi ${PD.includes(i)?'done':i===now?'now':''}" data-i="${i}" style="animation-delay:${i*.08}s"><span class="n">${PD.includes(i)?'✓':i+1}</span><p>${t}</p></div>`).join('');
+  $('#pcnt').textContent=PD.length+' / '+PLAN.length;$('#pfill').style.width=PD.length/PLAN.length*100+'%';
+  try{localStorage.setItem('doskaReja',JSON.stringify(PD))}catch(e){}}
+$('#pl').onclick=e=>{const c=e.target.closest('.pi');if(!c)return;const i=+c.dataset.i;PD=PD.includes(i)?PD.filter(x=>x!==i):[...PD,i];rejaR()};
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{show(b.dataset.go);try{location.hash=b.dataset.go}catch(x){}});
+function show(h){if(!V.includes(h))h='mavzu';V.forEach(v=>{$('#v-'+v).classList.toggle('on',v===h);document.querySelector('nav a[data-v='+v+']').classList.toggle('on',v===h)});window.scrollTo(0,0)}
+document.querySelector('nav').onclick=e=>{const a=e.target.closest('a');if(!a)return;e.preventDefault();show(a.dataset.v);try{location.hash=a.dataset.v}catch(x){}};
+window.onhashchange=()=>show(location.hash.slice(1));
+
+/* ===== Jamoalar: sardor tanlash va random taqsimlash ===== */
+let LD=[];try{LD=JSON.parse(localStorage.getItem('doskaLd')||'[]').filter(n=>MEMBERS.includes(n))}catch(e){}
+let busy=false;
+const rnd=n=>{const a=new Uint32Array(1);crypto.getRandomValues(a);return Math.floor(a[0]/4294967296*n)};
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function teamR(){
+  if(LD.length>G.length)LD=LD.slice(0,G.length);
+  try{localStorage.setItem('doskaLd',JSON.stringify(LD))}catch(e){}
+  $('#tpool').innerHTML=MEMBERS.map((n,i)=>`<button class="mc ${LD.includes(n)?'ld':''}" style="--i:${i}" data-i="${i}">${LD.includes(n)?'👑 ':''}${esc(n)}</button>`).join('');
+  $('#tcnt').textContent='Sardorlar: '+LD.length+' / '+G.length+' · A’zolar: '+MEMBERS.length;
+  $('#trnd').disabled=busy||LD.length!==G.length||MEMBERS.length<G.length;
+  if(!busy)resR(false);
+}
+function resR(anim){
+  $('#tres').innerHTML=G.map((g,k)=>{const mm=g.members||[];return `<div class="tg"><h3>${esc(g.name)}<small>${mm.length?'👥 '+mm.length:''}</small></h3><div class="tl">${mm.length?mm.map((n,j)=>`<div class="mc ${n===g.leader?'ld':''}" data-r="${j*G.length+k}" data-f="${n===g.leader?'👑 ':''}${esc(n)}" ${anim?'style="animation:none;opacity:0"':''}>${n===g.leader?'👑 ':''}${esc(n)}</div>`).join(''):'<div class="ph"></div><div class="ph"></div>'}</div></div>`}).join('');
+  if(!anim)return;
+  document.querySelectorAll('#tres .mc').forEach(el=>{
+    const d=+el.dataset.r*140,f=el.dataset.f,pre=f.startsWith('👑')?'👑 ':'';
+    setTimeout(()=>{el.style.animation='';el.style.opacity='';el.classList.add('land');let c=0;
+      const t=setInterval(()=>{if(c++<8)el.textContent=pre+MEMBERS[rnd(MEMBERS.length)];else{clearInterval(t);el.innerHTML=f}},55)},d)});
+}
+$('#tpool').onclick=e=>{const b=e.target.closest('.mc');if(!b||busy)return;const n=MEMBERS[+b.dataset.i];
+  if(LD.includes(n))LD=LD.filter(x=>x!==n);
+  else if(LD.length<G.length)LD.push(n);
+  else{b.classList.remove('no');void b.offsetWidth;b.classList.add('no');return}
+  teamR()};
+$('#trnd').onclick=async()=>{
+  if(busy||LD.length!==G.length)return;busy=true;$('#trnd').disabled=true;
+  G.forEach(g=>{g.members=[];g.leader=''});resR(false);
+  const pool=$('#tpool');pool.classList.add('shuf');$('#trnd').textContent='🎲 Aralashtirilmoqda…';
+  await wait(1700);pool.classList.remove('shuf');
+  const rest=shuffle(MEMBERS.filter(n=>!LD.includes(n))),off=rnd(G.length);
+  G.forEach((g,k)=>{g.leader=LD[k];g.members=[LD[k]]});
+  rest.forEach((n,i)=>G[(i+off)%G.length].members.push(n));
+  resR(true);
+  await wait(Math.max(...G.map(g=>g.members.length))*G.length*140+900);
+  busy=false;$('#trnd').textContent='🎲 Qayta random';render();
+};
+$('#tclr').onclick=()=>{if(busy||!confirm('Guruhlar tarkibi tozalansinmi?'))return;G.forEach(g=>{g.members=[];g.leader=''});$('#trnd').textContent='🎲 Random taqsimlash';render()};
+rejaR();render();setT();show(location.hash.slice(1));
+</script>
+</body>
+</html>
